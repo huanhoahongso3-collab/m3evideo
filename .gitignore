@@ -1,0 +1,11 @@
+node_modules/
+out/
+.remotion/
+
+# Copyrighted audio/media — keep local only, never push to a public repo
+public/sound.mp3
+public/faces/*
+!public/faces/.gitkeep
+
+*.log
+.DS_Store
