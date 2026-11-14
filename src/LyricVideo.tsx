@@ -37,34 +37,6 @@ const FACE_PHOTOS: Array<{
   { src: staticFile("faces/processed/laugh_nobg.png"), position: "left",  startSec: 40.55, endSec: 45 },
 ];
 
-// ─── Progress bar ─────────────────────────────────────────────────────────────
-const ProgressBar: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const progress = frame / durationInFrames;
-
-  return (
-    <div style={{
-      position: "absolute",
-      bottom: 24,
-      left: 48,
-      right: 48,
-      height: 4,
-      borderRadius: 999,
-      background: `${M3.primaryContainer}44`,
-      overflow: "hidden",
-    }}>
-      <div style={{
-        height: "100%",
-        width: `${progress * 100}%`,
-        borderRadius: 999,
-        background: `linear-gradient(90deg, ${M3.primary}, ${M3.tertiary})`,
-        boxShadow: `0 0 12px ${M3.primary}88`,
-      }} />
-    </div>
-  );
-};
-
 // ─── Particle sparkles ────────────────────────────────────────────────────────
 const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
   id: i,
@@ -194,7 +166,6 @@ export const LyricVideo: React.FC = () => {
         />
       ))}
 
-      <ProgressBar />
     </AbsoluteFill>
   );
 };
