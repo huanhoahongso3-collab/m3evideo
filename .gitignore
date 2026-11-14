@@ -2,10 +2,11 @@ node_modules/
 out/
 .remotion/
 
-# Copyrighted audio/media — keep local only, never push to a public repo
-public/sound.mp3
+# Raw/original face photos — keep local only. Only the cropped,
+# background-removed cutouts in public/faces/processed/ are pushed.
 public/faces/*
-!public/faces/.gitkeep
+!public/faces/processed/
+!public/faces/processed/*_nobg.png
 
 *.log
 .DS_Store
