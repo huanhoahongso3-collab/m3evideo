@@ -19,19 +19,22 @@ import { lineAccents } from "./lineAccents";
 import { M3, MONET_COLORS } from "./theme";
 
 // ─── Face photos config ──────────────────────────────────────────────────────
-// Drop your photos in public/faces/ and list them here.
-// Set startSec/endSec to control when each photo appears (seconds from clip start).
-// Leave the array empty to skip faces for now.
+// Background removed + cropped (see public/faces/processed/*_nobg.png), one
+// per matching lyric mood rather than random order:
+// - smile: big open smile      -> opening line (ngày đáng nhớ)
+// - wink:  happiest/cutest     -> "Ôi, hạnh phúc như vô bờ" (peak joy line)
+// - calm:  quieter/thoughtful  -> "Rót vào tai lời yêu..." (tender whisper line)
+// - laugh: animated/energetic  -> closing line, warm playful note to end on
 const FACE_PHOTOS: Array<{
   src: string;
   position: "left" | "right" | "center";
   startSec: number;
   endSec: number;
 }> = [
-  // Example — uncomment and fill in when you add photos:
-  // { src: staticFile("faces/photo1.png"), position: "right", startSec: 0,  endSec: 15 },
-  // { src: staticFile("faces/photo2.png"), position: "left",  startSec: 15, endSec: 30 },
-  // { src: staticFile("faces/photo3.png"), position: "right", startSec: 30, endSec: 45 },
+  { src: staticFile("faces/processed/smile_nobg.png"), position: "right", startSec: 1,     endSec: 6.9 },
+  { src: staticFile("faces/processed/wink_nobg.png"),  position: "left",  startSec: 19.55, endSec: 23.45 },
+  { src: staticFile("faces/processed/calm_nobg.png"),  position: "right", startSec: 29.18, endSec: 34.45 },
+  { src: staticFile("faces/processed/laugh_nobg.png"), position: "left",  startSec: 40.55, endSec: 45 },
 ];
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────

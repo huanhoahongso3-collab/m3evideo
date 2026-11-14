@@ -1,7 +1,6 @@
 import React from "react";
 import { Img, spring, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
-import { M3 } from "./theme";
-import { SPATIAL_DEFAULT, EFFECTS } from "./motion";
+import { SPATIAL_FAST, EFFECTS } from "./motion";
 
 interface Props {
   src: string;
@@ -11,13 +10,16 @@ interface Props {
   endFrame?: number;
 }
 
-const SPRING_ENTER = SPATIAL_DEFAULT; // bouncy settle, M3 Expressive spatial spring
-const SPRING_EXIT   = EFFECTS;         // clean, no overshoot
+const SPRING_ENTER = SPATIAL_FAST; // snappier/bouncier than the default spring — more dynamic
+const SPRING_EXIT   = EFFECTS;      // clean, no overshoot
 
+// No ring, no border, no circular clip — just the transparent cutout photo
+// itself, flying in from off-frame and flying back out, per user request
+// ("no border, transparent and fly smoothly out and in").
 export const FaceFrame: React.FC<Props> = ({
   src,
   position = "right",
-  size = 240,
+  size = 480, // 2x bigger, per user request
   startFrame = 0,
   endFrame,
 }) => {
@@ -49,19 +51,37 @@ export const FaceFrame: React.FC<Props> = ({
   };
   const posStyle = positionMap[position];
 
-  const enterScale = interpolate(enterProgress, [0, 1], [0.6, 1]);
-  const exitScale  = interpolate(exitProgress, [0, 1], [1, 0.7]);
-  const scale = exitProgress > 0 ? exitScale : enterScale;
+  // Fly direction: enters from well off-frame on its side, exits even
+  // further off that same edge — bigger travel distance + overshoot spring
+  // (SPATIAL_FAST) + rotation + an arcing dip, so it reads as a confident
+  // swoop rather than a gentle slide. "much better, bigger x2, more dynamic".
+  const dir = position === "left" ? -1 : position === "right" ? 1 : 0;
+  const enterTranslateX = interpolate(enterProgress, [0, 1], [dir * 520, 0]);
+  const exitTranslateX  = interpolate(exitProgress, [0, 1], [0, dir * 820]);
+  const slideX = exitProgress > 0 ? exitTranslateX : enterTranslateX;
 
-  const enterOpacity = enterProgress;
+  // Arc dip: swoops up mid-flight on the way in, down on the way out —
+  // adds a curved trajectory instead of a flat straight line.
+  const enterArcY = -Math.sin(Math.min(enterProgress, 1) * Math.PI) * 90;
+  const exitArcY = Math.sin(Math.min(exitProgress, 1) * Math.PI) * 70;
+  const arcY = exitProgress > 0 ? exitArcY : enterArcY;
+
+  // Rotation during flight, settling flat once arrived.
+  const enterRotation = interpolate(enterProgress, [0, 1], [dir * -22, 0]);
+  const exitRotation = interpolate(exitProgress, [0, 1], [0, dir * 28]);
+  const rotation = exitProgress > 0 ? exitRotation : enterRotation;
+
+  // Overshoot bounce on scale (SPATIAL_FAST already overshoots past 1
+  // slightly on its own, but we clamp the far end so it doesn't balloon).
+  const enterScale = interpolate(enterProgress, [0, 1.15], [0.5, 1.08], { extrapolateRight: "clamp" });
+  const scale = exitProgress > 0 ? 1 : enterScale; // no shrink on exit — reads as motion, not dissolving
+
+  const enterOpacity = interpolate(enterProgress, [0, 0.35, 1], [0, 1, 1], { extrapolateRight: "clamp" });
   const exitOpacity  = interpolate(exitProgress, [0, 1], [1, 0]);
   const opacity = Math.min(enterOpacity, exitOpacity);
 
   // Gentle float — frame-driven (deterministic for render), not wall-clock CSS
-  const floatY = Math.sin(frame * 0.04) * 8;
-
-  // Ring rotation — frame-driven instead of CSS @keyframes
-  const ringRotation = (frame * 1.5) % 360;
+  const floatY = Math.sin(frame * 0.04) * 14;
 
   return (
     <div
@@ -70,36 +90,14 @@ export const FaceFrame: React.FC<Props> = ({
         bottom: 80,
         ...posStyle,
         opacity,
-        transform: `${posStyle.transform ?? ""} scale(${scale}) translateY(${floatY}px)`,
+        transform: `${posStyle.transform ?? ""} translateX(${slideX}px) translateY(${arcY + floatY}px) rotate(${rotation}deg) scale(${scale})`,
         zIndex: 10,
       }}
     >
-      {/* Glow ring — rotation driven by frame number, deterministic across renders */}
-      <div
-        style={{
-          position: "absolute",
-          inset: -12,
-          borderRadius: "50%",
-          background: `conic-gradient(from ${ringRotation}deg, ${M3.primary}, ${M3.tertiary}, ${M3.secondary}, ${M3.primary})`,
-          filter: "blur(8px)",
-          opacity: 0.7,
-        }}
-      />
-      {/* M3 shape container */}
-      <div
-        style={{
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          overflow: "hidden",
-          border: `3px solid ${M3.primaryContainer}`,
-          position: "relative",
-          boxShadow: `0 8px 40px ${M3.primary}66, 0 0 0 4px ${M3.primaryContainer}88`,
-        }}
-      >
+      <div style={{ width: size, height: size, position: "relative" }}>
         <Img
           src={src}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       </div>
     </div>
