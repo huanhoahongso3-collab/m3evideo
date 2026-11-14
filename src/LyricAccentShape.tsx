@@ -28,8 +28,9 @@ export const LyricAccentShape: React.FC<Props> = ({ line, accent, exitTargetXPer
 
   const startFrame = line.start * fps;
   const endFrame = line.end * fps;
-  const leadIn = 14;
-  const fadeOut = 16;
+  const fpsScale = fps / 30; // keep frame-count timings in real seconds regardless of fps
+  const leadIn = Math.round(14 * fpsScale);
+  const fadeOut = Math.round(16 * fpsScale);
 
   const visible = frame >= startFrame - leadIn && frame <= endFrame + fadeOut;
   if (!visible) return null;
@@ -56,8 +57,8 @@ export const LyricAccentShape: React.FC<Props> = ({ line, accent, exitTargetXPer
   // Continuous idle drift while fully on-screen — slow circular wander, on
   // top of the existing breathing pulse, so the shape never sits dead
   // still ("shape phải có sự di chuyển").
-  const idleDriftX = Math.sin(frame * 0.013 + accent.shapeXPercent) * 16;
-  const idleDriftY = Math.cos(frame * 0.011 + accent.shapeYPercent) * 16;
+  const idleDriftX = Math.sin(frame * 0.013 / fpsScale + accent.shapeXPercent) * 16;
+  const idleDriftY = Math.cos(frame * 0.011 / fpsScale + accent.shapeYPercent) * 16;
   const settleAmount = Math.min(enterSpring, 1);
 
   const hasHandoff = exitTargetXPercent !== undefined && exitTargetYPercent !== undefined;
@@ -104,23 +105,23 @@ export const LyricAccentShape: React.FC<Props> = ({ line, accent, exitTargetXPer
   const morphed = morphPoints(pointsA, pointsB, morphT);
   const path = toSmoothPath(morphed, 0, 0, 1);
 
-  const rotation = localFrame * 0.18; // energetic but not dizzying
+  const rotation = localFrame * 0.18 / fpsScale; // energetic but not dizzying
   // Continuous zoom pulse (grows/shrinks while the accent is on screen) —
   // gentle amplitude/frequency so it reads as smooth breathing, not a jitter.
-  const pulseScale = 1 + Math.sin(localFrame * 0.08) * 0.09;
+  const pulseScale = 1 + Math.sin(localFrame * 0.08 / fpsScale) * 0.09;
   const color = M3[accent.shapeColor];
 
   // Icon springs in slightly after the shape, same stagger logic as the
   // word-by-word lyric reveal, with its own faster independent pulse so it
   // doesn't move in lockstep with the shape underneath it.
   const iconSpring = spring({
-    frame: frame - (startFrame - leadIn) - 4,
+    frame: frame - (startFrame - leadIn) - 4 * fpsScale,
     fps,
     config: SPATIAL_FAST,
   });
   const iconOpacity = interpolate(iconSpring, [0, 1], [0, 1], { extrapolateRight: "clamp", extrapolateLeft: "clamp" });
   const iconEnterScale = interpolate(iconSpring, [0, 1], [0.3, 1], { extrapolateRight: "clamp" });
-  const iconPulse = 1 + Math.sin(localFrame * 0.1 + 1.3) * 0.07;
+  const iconPulse = 1 + Math.sin(localFrame * 0.1 / fpsScale + 1.3) * 0.07;
   const iconScale = iconEnterScale * iconPulse;
 
   return (

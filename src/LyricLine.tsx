@@ -18,8 +18,9 @@ export const LyricLineComp: React.FC<Props> = ({ line, index, accent }) => {
   const startFrame = line.start * fps;
   const endFrame   = line.end   * fps;
 
-  const leadIn  = 14;
-  const fadeOut = 16;
+  const fpsScale = fps / 30; // keep frame-count timings in real seconds regardless of fps
+  const leadIn  = Math.round(14 * fpsScale);
+  const fadeOut = Math.round(16 * fpsScale);
   const visible = frame >= startFrame - leadIn && frame <= endFrame + fadeOut;
   if (!visible) return null;
 
@@ -127,7 +128,7 @@ export const LyricLineComp: React.FC<Props> = ({ line, index, accent }) => {
         {(() => {
           let charCounter = 0; // running index across the whole line, for a continuous wave phase
           return words.map((word, wi) => {
-            const wordDelay = wi * 2.2;
+            const wordDelay = wi * 2.2 * fpsScale;
             const wordSpring = spring({
               frame: frame - (startFrame - leadIn) - wordDelay,
               fps,
@@ -162,7 +163,7 @@ export const LyricLineComp: React.FC<Props> = ({ line, index, accent }) => {
                     Expressive reference videos), not a one-time animation. */}
                 {word.split("").map((ch, ci) => {
                   const globalIndex = charCounter++;
-                  const waveY = isHumLine ? 0 : Math.sin(frame * 0.12 + globalIndex * 0.6) * 4;
+                  const waveY = isHumLine ? 0 : Math.sin(frame * 0.12 / fpsScale + globalIndex * 0.6) * 4;
                   return (
                     <span key={ci} style={{ display: "inline-block", transform: `translateY(${waveY}px)` }}>
                       {ch}

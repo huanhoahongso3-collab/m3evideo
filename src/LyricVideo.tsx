@@ -77,10 +77,12 @@ const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
 
 const Sparkles: React.FC = () => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const fpsScale = fps / 30; // keep particle cadence in real seconds regardless of fps
   return (
     <>
       {PARTICLES.map((p) => {
-        const t = ((frame * p.speed + p.delay) % 90) / 90;
+        const t = (((frame / fpsScale) * p.speed + p.delay) % 90) / 90;
         const opacity = interpolate(t, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
         const y = p.y - t * 15;
         return (
@@ -114,6 +116,8 @@ function handoffTarget(ax: number, ay: number, bx?: number, by?: number) {
 // ─── Main composition ────────────────────────────────────────────────────────
 export const LyricVideo: React.FC = () => {
   const { fps } = useVideoConfig();
+  const trimStartSec = 11;
+  const trimEndSec = 56;
 
   return (
     <AbsoluteFill
@@ -128,8 +132,8 @@ export const LyricVideo: React.FC = () => {
       {/* Audio — trimmed from second 11 to 56 */}
       <Audio
         src={staticFile("sound.mp3")}
-        startFrom={11 * 30}   // 11s * 30fps — skip first 11s of file
-        endAt={56 * 30}       // stop at 56s of file
+        startFrom={Math.round(trimStartSec * fps)} // skip first 11s of file
+        endAt={Math.round(trimEndSec * fps)}        // stop at 56s of file
         volume={1}
       />
 

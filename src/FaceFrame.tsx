@@ -26,7 +26,8 @@ export const FaceFrame: React.FC<Props> = ({
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const end = endFrame ?? durationInFrames;
-  const exitLead = 14; // frames before `end` the exit animation begins
+  const fpsScale = fps / 30; // keep frame-count timings in real seconds regardless of fps
+  const exitLead = Math.round(14 * fpsScale); // frames before `end` the exit animation begins
 
   const visible = frame >= startFrame && frame <= end + exitLead;
   if (!visible) return null;
@@ -81,7 +82,7 @@ export const FaceFrame: React.FC<Props> = ({
   const opacity = Math.min(enterOpacity, exitOpacity);
 
   // Gentle float — frame-driven (deterministic for render), not wall-clock CSS
-  const floatY = Math.sin(frame * 0.04) * 14;
+  const floatY = Math.sin(frame * 0.04 / fpsScale) * 14;
 
   return (
     <div

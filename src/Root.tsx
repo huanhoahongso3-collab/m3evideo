@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { Composition, registerRoot, delayRender, continueRender, staticFile } from "remotion";
 import { LyricVideo } from "./LyricVideo";
 
-// 45 seconds @ 30fps = 1350 frames  (audio 11s → 56s)
-const DURATION_FRAMES = 1350;
-const FPS = 30;
+// 45 seconds @ 60fps = 2700 frames  (audio 11s → 56s)
+const DURATION_FRAMES = 2700;
+const FPS = 60;
 
 // Google Sans Flex (OFL, Nov 2025), self-hosted and split by unicode-range
 // so the Vietnamese diacritics (ầ, ệ, ồ, ự, ẵ...) actually load — the

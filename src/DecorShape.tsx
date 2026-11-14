@@ -31,10 +31,11 @@ export const DecorShape: React.FC<Props> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const startFrame = line.start * fps + delayFrames;
+  const fpsScale = fps / 30; // keep frame-count timings in real seconds regardless of fps
+  const startFrame = line.start * fps + delayFrames * fpsScale;
   const endFrame = line.end * fps;
-  const leadIn = 10;
-  const fadeOut = 14;
+  const leadIn = Math.round(10 * fpsScale);
+  const fadeOut = Math.round(14 * fpsScale);
 
   const visible = frame >= startFrame - leadIn && frame <= endFrame + fadeOut;
   if (!visible) return null;
@@ -52,8 +53,8 @@ export const DecorShape: React.FC<Props> = ({
   // Continuous idle drift while fully on-screen (between the enter and
   // exit windows) — a slow circular wander, so the shape is never truly
   // static, per user request ("shape phải có sự di chuyển").
-  const idleDriftX = Math.sin(frame * 0.015 + xPercent) * 14;
-  const idleDriftY = Math.cos(frame * 0.012 + yPercent) * 14;
+  const idleDriftX = Math.sin(frame * 0.015 / fpsScale + xPercent) * 14;
+  const idleDriftY = Math.cos(frame * 0.012 / fpsScale + yPercent) * 14;
 
   const hasHandoff = exitTargetXPercent !== undefined && exitTargetYPercent !== undefined;
 
@@ -90,7 +91,7 @@ export const DecorShape: React.FC<Props> = ({
 
   // Only rotation — no morph, no pulse — per user request ("shape không
   // morph cho shape phụ chỉ có xoay quanh thôi").
-  const rotation = localFrame * 0.14;
+  const rotation = localFrame * 0.14 / fpsScale;
 
   return (
     <div
